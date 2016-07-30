@@ -10,5 +10,12 @@
         <root level="trace">
             <appender-ref ref="console"/>
         </root>
+
+        <!--disable weld logging-->
+        <Logger name="org.jboss.weld" level="off" additivity="false"/>
     </loggers>
+
+    <category name="org.jboss">
+        <priority value="off"/>
+    </category>
 </configuration>
