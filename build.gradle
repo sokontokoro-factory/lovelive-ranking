@@ -1,5 +1,6 @@
 apply plugin: 'war'
 apply plugin: 'jacoco'
+apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'org.akhikhl.gretty'
 
 group = 'net.sokontokoro_factory'
@@ -13,7 +14,12 @@ buildscript {
     repositories { jcenter() }
     dependencies {
         classpath 'org.akhikhl.gretty:gretty:+'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
     }
+}
+
+war {
+    archiveName = "lovelive-${version}.${getDate()}.war"
 }
 
 gretty {
@@ -33,7 +39,7 @@ dependencies{
     // jersey servlet
     compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version:'2.23.1'
     compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version:'2.23.1'
-    compile group: 'javax.servlet', name: 'servlet-api', version:'2.5'
+    providedCompile group: 'javax.servlet', name: 'servlet-api', version:'2.5'
 
     // CDI container
     compile group: 'org.glassfish.jersey.ext.cdi', name: 'jersey-cdi1x', version:'2.23.1'
@@ -79,4 +85,8 @@ jacocoTestReport {
         xml.enabled = true // coveralls plugin depends on xml format report
         html.enabled = true
     }
+}
+def getDate() {
+    def date = new Date()
+    return date.format('yyyyMMdd')
 }
