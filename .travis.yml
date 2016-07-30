@@ -4,7 +4,7 @@ jdk:
 services:
     - mysql
 before_script:
-    - mysql -u root -e 'create database LOVELIVE_GAME_DB;'
-    - mysql -u root LOVELIVE_GAME_DB < init_test_database.sql
+    - mysql -u root -e 'create database lovelive_game_db;'
+    - mysql -u root lovelive_game_db < init_test_database.sql
 after_success:
     - gradle jacocoTestReport coveralls
