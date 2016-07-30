@@ -1,7 +1,29 @@
-# Built application files
-target/
+# bower
+bower_components/
 
-# User-specific configurations
+# npm
+node_modules/
+
+# generated document
+docs/
+
+# Java class files
+*.class
+
+# Gradle files
+.gradle/
+build/
+out/
+classes/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log Files
+*.log
+
+# Intellij
+.idea/artifacts/
 .idea/libraries/
 .idea/workspace.xml
 .idea/tasks.xml
