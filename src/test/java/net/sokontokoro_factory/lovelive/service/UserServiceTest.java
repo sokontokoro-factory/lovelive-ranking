@@ -148,25 +148,16 @@ public class UserServiceTest {
      * test management method
      */
     /** データベースのバックアップ */
-    private static File backupFile;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception{
-        backupFile = TestDatabase.createBackupFile();
-    }
+    private File backupFile;
 
     @Before
     public void setUp() throws Exception {
+        backupFile = TestDatabase.createBackupFile();
         TestDatabase.importTestDataSet();
     }
 
     @After
     public void tearDown() throws Exception {
-
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
         TestDatabase.importBackupFile(backupFile);
     }
 }

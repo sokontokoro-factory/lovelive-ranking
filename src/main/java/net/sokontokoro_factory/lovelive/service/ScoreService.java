@@ -24,8 +24,8 @@ import static java.util.Comparator.comparing;
 @RequestScoped
 public class ScoreService {
     private static final Logger logger = LogManager.getLogger(ScoreService.class);
-    private static final Config cofig = ConfigLoader.getProperties("config");
 
+    private static final Config cofig = ConfigLoader.getProperties("config");
     private static final int PRODUCE_NUMBER_OF_RANKING = cofig.getInt("produce.number.ranking");
 
     @Inject
@@ -66,7 +66,7 @@ public class ScoreService {
      * @param game
      * @param userId
      * @param point
-     * @throws AppException
+     * @throws InvalidArgumentException
      */
     public void insertScore(MasterGame game, long userId, int point) throws InvalidArgumentException {
 
@@ -91,7 +91,7 @@ public class ScoreService {
      * @param targetPoint
      * @return
      */
-    public Long getRanking(MasterGame game, int targetPoint){
+    public Long getRankingNumber(MasterGame game, int targetPoint){
         logger.entry("getRanking()", game, targetPoint);
 
         List<ScoreEntity> allScore = scoreFacade.findAll();
@@ -106,22 +106,24 @@ public class ScoreService {
 
 
 
-    public List<ScoreEntity> getTops(MasterGame game){
-        logger.entry(game);
-        int borderpoint = getBorderPoint(game);
+    public List<ScoreEntity> getTops(MasterGame game, int offsetRankingNumber){
+        logger.entry(game, offsetRankingNumber);
+        int offsetBorderPoint = getBorderPoint(game, offsetRankingNumber);
+        int limitBorderPoint = getBorderPoint(game, offsetRankingNumber + PRODUCE_NUMBER_OF_RANKING);
 
         List<ScoreEntity> allScore = scoreFacade.findAll();
         List<ScoreEntity> topScores = allScore
                 .stream()
                 .filter(score -> score.getGameId() == game.getId())
-                .filter(score -> score.getPoint() >= borderpoint)
+                .filter(score -> score.getPoint() <= offsetBorderPoint)
+                .filter(score -> score.getPoint() > limitBorderPoint)
                 .sorted(comparing(ScoreEntity::getPoint).reversed())
                 .collect(Collectors.toList());
 
         return logger.traceExit(topScores);
     }
 
-    public int getBorderPoint(MasterGame game){
+    public int getBorderPoint(MasterGame game, int targetRankingNumber){
         logger.entry(game);
         List<ScoreEntity> allScore = scoreFacade.findAll();
 
@@ -134,10 +136,10 @@ public class ScoreService {
                 .collect(Collectors.toList());
 
         int borderPoint;
-        if(descPoints.size() < PRODUCE_NUMBER_OF_RANKING){
+        if(descPoints.size() < targetRankingNumber){
             borderPoint = descPoints.get(descPoints.size() - 1);
         }else {
-            borderPoint = descPoints.get(PRODUCE_NUMBER_OF_RANKING - 1);
+            borderPoint = descPoints.get(targetRankingNumber - 1);
         }
         logger.info("game: " + game + ", borderpoint: " + borderPoint);
         return logger.traceExit(borderPoint);
@@ -152,7 +154,6 @@ public class ScoreService {
      * @param gameId
      * @param userId
      * @param point
-     * @throws AppException
      */
     private void insert(int gameId, long userId, int point){
         logger.entry(gameId, userId, point);

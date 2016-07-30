@@ -63,7 +63,7 @@ public class ScoreServiceTest {
     @Test
     public void test_getTop_ランキング上位のスコアリストを降順で取得できる()throws Exception{
 
-        List<ScoreEntity> actualList = targetClass.getTops(MasterGame.HONOCAR);
+        List<ScoreEntity> actualList = targetClass.getTops(MasterGame.HONOCAR, 1);
 
         // 降順のリストである
         int preventPoint = Integer.MAX_VALUE;
@@ -72,20 +72,26 @@ public class ScoreServiceTest {
             preventPoint = score.getPoint();
         }
 
-        // 決められたリスト数のデータを返却している
-        assertThat(actualList.size(), is(PrivateField.get(ScoreService.class, "PRODUCE_NUMBER_OF_RANKING")));
+        for(ScoreEntity s: actualList){
+            System.out.println("!!!!!!!!" + s.toString());
+        }
+
+        // 重複考慮された、順位数分のリストを返却している
+        long countOfRanking = actualList.stream().map(list -> list.getPoint()).distinct().count();
+        long expectCount = Long.valueOf(PrivateField.get(ScoreService.class, "PRODUCE_NUMBER_OF_RANKING").toString());
+        assertThat(countOfRanking, is(expectCount));
     }
 
     @Test
     public void test_getRanking_順位を取得できる()throws Exception{
 
-        List<ScoreEntity> scores = targetClass.getTops(MasterGame.HONOCAR);
+        List<ScoreEntity> scores = targetClass.getTops(MasterGame.HONOCAR, 1);
 
         // １位
-        assertTrue(targetClass.getRanking(MasterGame.HONOCAR, scores.get(0).getPoint()) == 1);
+        assertTrue(targetClass.getRankingNumber(MasterGame.HONOCAR, scores.get(0).getPoint()) == 1);
 
         // 最下位
-        assertTrue(targetClass.getRanking(MasterGame.HONOCAR, scores.get(scores.size() -1 ).getPoint()) == scores.size());
+        assertTrue(targetClass.getRankingNumber(MasterGame.HONOCAR, scores.get(scores.size() -1 ).getPoint()) == scores.size());
     }
 
 
@@ -93,25 +99,16 @@ public class ScoreServiceTest {
      * test management method
      */
     /** データベースのバックアップ */
-    private static File backupFile;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception{
-        backupFile = TestDatabase.createBackupFile();
-    }
+    private File backupFile;
 
     @Before
     public void setUp() throws Exception {
+        backupFile = TestDatabase.createBackupFile();
         TestDatabase.importTestDataSet();
     }
 
     @After
     public void tearDown() throws Exception {
-
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
         TestDatabase.importBackupFile(backupFile);
     }
 }

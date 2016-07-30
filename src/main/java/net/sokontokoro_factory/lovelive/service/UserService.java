@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 
