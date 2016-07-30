@@ -14,7 +14,7 @@
         <!--******* LOCAL JAR FILE *************************************************-->
         <dependency>
             <groupId>net.sokontokoro_factory</groupId>
-            <artifactId>tweetlyoauth</artifactId>
+            <artifactId>tweetly_oauth</artifactId>
             <version>1.0.20160725</version>
             <scope>system</scope>
             <systemPath>${basedir}/library/tweetly_oauth-1.0.20160725.jar</systemPath>
@@ -160,6 +160,8 @@
 
     <!--/////// BUILD ///////////////////////////////////////////////-->
     <build>
+        <finalName>lovelive</finalName>
+
         <plugins>
             <!--****** compile **************************************************-->
             <plugin>
@@ -196,6 +198,25 @@
                 <version>4.1.0</version>
                 <configuration>
                     <sourceEncoding>UTF-8</sourceEncoding>
+                </configuration>
+            </plugin>
+
+            <!-- copy local jar file to war package -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeScope>system</includeScope>
+                    <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/lib</outputDirectory>
                 </configuration>
             </plugin>
 
