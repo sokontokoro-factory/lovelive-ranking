@@ -4,6 +4,6 @@ jdk:
 services:
     - mysql
 before_script:
-    - mysql -u root -e 'CREATE DATABASE IF NOT EXISTS LOVELIVE_GAME_DB'
+    - mysql -u root < init_test_database.sql
 after_success:
     - mvn clean test jacoco:report coveralls:report
