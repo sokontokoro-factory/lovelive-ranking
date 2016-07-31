@@ -8,8 +8,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.sql.Timestamp;
 
-@XmlRootElement
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@XmlRootElement
 public class ScoreDto {
 	
 	@XmlElement(name = "game_name")
