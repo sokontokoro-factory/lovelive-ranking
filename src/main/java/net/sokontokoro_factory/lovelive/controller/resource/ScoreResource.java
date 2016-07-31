@@ -62,10 +62,8 @@ public class ScoreResource {
 			throws NoResourceException, InvalidArgumentException {
 
 		// ゲーム名の入力チェック
-		MasterGame game = null;
-		try{
-			MasterGame.codeOf(gameName);
-		}catch (IllegalArgumentException e){
+		MasterGame game = MasterGame.codeOf(gameName);
+		if(game == null){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
@@ -97,7 +95,6 @@ public class ScoreResource {
 	 * @throws InvalidArgumentException
      */
 	@AuthFilter.LoginRequired
-//	@TokenFilter.TokenRequired
     @Path("{game_name}/me")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -107,11 +104,15 @@ public class ScoreResource {
 									InsertScoreForm insertScoreForm)
 									throws InvalidArgumentException {
 
+		// 入力チェック
+		if(insertScoreForm.getPoint() == null){
+			ErrorDto errorDto = new ErrorDto("点数を入力して下さい");
+			return Response.status(Response.Status.BAD_REQUEST).entity(errorDto).build();
+		}
+
 		// ゲーム名の入力チェック
-		MasterGame game = null;
-		try{
-			MasterGame.valueOf(gameName);
-		}catch (IllegalArgumentException e){
+		MasterGame game = MasterGame.codeOf(gameName);
+		if(game == null){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
@@ -132,7 +133,7 @@ public class ScoreResource {
     	/* レスポンス */
 		URI uri = uriInfo.getBaseUriBuilder()
 				.path(ScoreResource.class)
-				.path(insertScoreForm.getGameName())
+				.path(game.getCode())
 				.path("me")
 				.build();
 
