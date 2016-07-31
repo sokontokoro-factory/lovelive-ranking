@@ -10,6 +10,8 @@ import net.sokontokoro_factory.tweetly_oauth.dto.AccessToken;
 import net.sokontokoro_factory.tweetly_oauth.dto.RequestToken;
 import net.sokontokoro_factory.yoshinani.file.config.Config;
 import net.sokontokoro_factory.yoshinani.file.config.ConfigLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -29,6 +31,8 @@ import java.net.URISyntaxException;
 @Path("auth/twitter")
 @RequestScoped
 public class TwitterAuthResource {
+    private static final Logger logger = LogManager.getLogger(TwitterAuthResource.class.getSimpleName());
+
     private static final Config config = ConfigLoader.getProperties();
     private static final String GAME_CLIENT_ORIGIN = config.getString("game.client.origin");
 
@@ -49,7 +53,10 @@ public class TwitterAuthResource {
      */
     @Path("login")
     @GET
-    public Response login(@QueryParam("redirect_path") String redirectPath){
+    public Response login(
+            @QueryParam("redirect")
+            @DefaultValue("/")
+                    String redirectPath){
 
         TweetlyOAuth tweetlyOAuth = new TweetlyOAuth();
 
@@ -57,16 +64,18 @@ public class TwitterAuthResource {
                 .path(TwitterAuthResource.class)
                 .path("/callback")
                 .build().toString();
+        logger.info("callback URL after logging:" + callbackUri);
 
         RequestToken token = null;
         try{
             token = tweetlyOAuth.getRequestToken(callbackUri);
         }catch(TweetlyOAuthException e){
+            logger.catching(e);
             ErrorDto error = new ErrorDto();
             error.setMessage("faild to access twitter auth providing server");
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(error).build();
         }
-        loginSession.setRedirectPathAfterLogging(redirectPath == null? "": redirectPath);
+        loginSession.setRedirectPathAfterLogging(redirectPath);
         loginSession.setRequestToken(token);
 
 		// twitter認証画面へリダイレクト
@@ -111,17 +120,21 @@ public class TwitterAuthResource {
                 loginSession.setUserId((Long.valueOf(token.getUserId())));
                 loginSession.setUserName(token.getScreenName());
 
+                logger.info("loging requesting user admit. user id: " + token.getUserId());
                 try{
                     userService.getById(loginSession.getUserId());
-                }catch(NoResourceException notRegisterd){
+                }catch(NoResourceException notRegisterd) {
+                    logger.info("loging requesting user not exist in DB. register!");
                     userService.create(loginSession.getUserId(), loginSession.getUserName());
                 }
 
             }else{
                 // 認証不許可の場合
                 loginSession.invalidate();
+                logger.info("loging requesting user deny.");
             }
         }catch(TweetlyOAuthException e){
+            logger.catching(e);
             ErrorDto error = new ErrorDto();
             error.setMessage("faild to access twitter auth providing server");
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(error).build();
@@ -144,14 +157,17 @@ public class TwitterAuthResource {
      */
     @Path("logout")
     @GET
-    public Response logout(@QueryParam("redirect") String redirectPath){
-
-        loginSession.invalidate();
+    public Response logout(
+            @QueryParam("redirect")
+            @DefaultValue("/")
+                    String redirectPath){
 
         URI redirect = UriBuilder
                 .fromUri(GAME_CLIENT_ORIGIN)
-                .path(loginSession.getRedirectPathAfterLogging())
+                .path(redirectPath)
                 .build();
+
+        loginSession.invalidate();
 
         return Response.seeOther(redirect).build();
     }
