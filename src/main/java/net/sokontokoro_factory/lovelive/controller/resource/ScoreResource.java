@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@Path("api/scores")
+@Path("scores")
 @RequestScoped
 public class ScoreResource {
 

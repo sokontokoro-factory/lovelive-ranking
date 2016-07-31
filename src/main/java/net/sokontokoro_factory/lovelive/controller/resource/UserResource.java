@@ -18,7 +18,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("api/users")
+@Path("users")
 @RequestScoped
 public class UserResource {
 
