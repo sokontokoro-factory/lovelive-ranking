@@ -20,8 +20,8 @@ public class LogService {
     @Inject
     GameLogFacade gameLogFacade;
 
-//    @Inject
-//    LoginSession loginSession;
+    @Inject
+    LoginSession loginSession;
 
     /**
      * ゲームログを登録する
@@ -41,11 +41,11 @@ public class LogService {
         log.setUserId(userId);
         log.setPoint(point);
         log.setPlayDate(System.currentTimeMillis());
-//        log.setSessionId(loginSession.getRequest().getRequestedSessionId());
-//        log.setStartSessionDate(loginSession.getRequest().getSession().getCreationTime());
-//        log.setClientIp(loginSession.getRequest().getRemoteAddr());
-//        log.setUserAgent(loginSession.getRequest().getHeader("user-agent"));
-//        log.setLocale(loginSession.getRequest().getLocale().toString());
+        log.setSessionId(loginSession.getRequest().getRequestedSessionId());
+        log.setStartSessionDate(loginSession.getRequest().getSession().getCreationTime());
+        log.setClientIp(loginSession.getRequest().getRemoteAddr());
+        log.setUserAgent(loginSession.getRequest().getHeader("user-agent"));
+        log.setLocale(loginSession.getRequest().getLocale().toString());
 
         try{
             gameLogFacade.beginTransaction();
