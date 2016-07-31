@@ -4,6 +4,7 @@ import net.sokontokoro_factory.lovelive.TestDatabase;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.UserEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.UserFacade;
+import net.sokontokoro_factory.lovelive.persistence.master.MasterFavorite;
 import net.sokontokoro_factory.tweetly_oauth.dto.AccessToken;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.*;
@@ -100,11 +101,11 @@ public class UserServiceTest {
     public void test_update_ユーザーが存在しない場合例外が発生する(){
         long notExistUserId = 25252;
         String userName = "any string";
-        int favoriteId = 1;
+        MasterFavorite favorite = MasterFavorite.KOTORI;
 
         // 実行
         try{
-            userService.update(notExistUserId, userName, favoriteId);
+            userService.update(notExistUserId, userName, favorite);
             fail();
         }catch (NoResourceException ok){
 

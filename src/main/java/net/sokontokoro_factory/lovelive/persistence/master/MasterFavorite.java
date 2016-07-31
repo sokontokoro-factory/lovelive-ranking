@@ -2,6 +2,9 @@ package net.sokontokoro_factory.lovelive.persistence.master;
 
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum MasterFavorite {
     HONOKA  (1, "honoka"),
     ERI     (2, "eri"),
@@ -27,10 +30,17 @@ public enum MasterFavorite {
     private int id;
 
     @Getter
-    private String value;
+    private String code;
 
-    MasterFavorite(int id, String value){
+    MasterFavorite(int id, String code){
         this.id = id;
-        this.value = value;
+        this.code = code;
     }
+    public static MasterFavorite codeOf(final String code) {
+        return codeToEnum.get(code);
+    }
+
+    private static final Map<String, MasterFavorite> codeToEnum = new HashMap<String, MasterFavorite>() {{
+        for (MasterFavorite favorite : MasterFavorite.values()) put(favorite.getCode(), favorite);
+    }};
 }

@@ -3,6 +3,7 @@ package net.sokontokoro_factory.lovelive.service;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.UserEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.UserFacade;
+import net.sokontokoro_factory.lovelive.persistence.master.MasterFavorite;
 import net.sokontokoro_factory.tweetly_oauth.TweetlyOAuth;
 import net.sokontokoro_factory.tweetly_oauth.TweetlyOAuthException;
 import net.sokontokoro_factory.tweetly_oauth.dto.AccessToken;
@@ -103,15 +104,15 @@ public class UserService{
      *
      * @param userId                ユーザーID
      * @param name
-     * @param favoriteId
+     * @param favorite
      * @throws NoResourceException  ユーザーIDが存在しない場合
      */
     public void update(
             long userId,
             String name,
-            Integer favoriteId) throws NoResourceException{
+            MasterFavorite favorite) throws NoResourceException{
 
-        logger.entry(userId, name, favoriteId);
+        logger.entry(userId, name, favorite);
 
         /* 更新対象のuser objectを取得 */
         UserEntity updateUser = getById(userId);
@@ -121,8 +122,8 @@ public class UserService{
             if(name != null){
                 updateUser.setName(name);
             }
-            if(favoriteId != null){
-                updateUser.setFavoriteId(favoriteId);
+            if(favorite != null){
+                updateUser.setFavoriteId(favorite.getId());
             }
             updateUser.setUpdateDate(System.currentTimeMillis());
         }catch (PersistenceException e){
