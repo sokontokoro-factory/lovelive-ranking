@@ -16,7 +16,7 @@ public class GameLogEntity {
     @Column(name = "GAME_ID", nullable = false)
     private Integer gameId;
 
-    @Column(name = "USER_ID", nullable = false)
+    @Column(name = "USER_ID")
     private Long userId;
 
     @Column(name = "POINT", nullable = false)
@@ -39,12 +39,4 @@ public class GameLogEntity {
 
     @Column(name = "LOCALE")
     private String locale;
-
-    /*************************************
-     * relation
-     */
-
-    @JoinColumn(name = "USER_ID", referencedColumnName = "ID", insertable = false, updatable = false)
-    @ManyToOne
-    private UserEntity userEntity;
 }
