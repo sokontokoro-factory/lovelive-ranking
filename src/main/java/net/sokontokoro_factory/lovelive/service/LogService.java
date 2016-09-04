@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 
 @RequestScoped
 public class LogService {
@@ -30,9 +31,10 @@ public class LogService {
      * @param userId
      * @param point
      */
+    @Transactional
     public void addGameLog(
             MasterGame game,
-            long userId,
+            Long userId,
             int point){
         logger.entry("add()", game, userId);
 
@@ -47,17 +49,8 @@ public class LogService {
         log.setUserAgent(loginSession.getRequest().getHeader("user-agent"));
         log.setLocale(loginSession.getRequest().getLocale().toString());
 
-        try{
-            gameLogFacade.beginTransaction();
-            gameLogFacade.create(log);
-            gameLogFacade.commit();
-        }catch (PersistenceException e){
-            logger.catching(e);
+        gameLogFacade.create(log);
 
-            if(gameLogFacade.isActive()){
-                gameLogFacade.rollback();
-            }
-        }
         logger.traceExit();
     }
 }

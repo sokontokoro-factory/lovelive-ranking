@@ -36,39 +36,6 @@ public abstract class AbstractFacade<T> {
     }
 
     /**
-     * トランザクションクを開始する。
-     */
-    public void beginTransaction(){
-        logger.info("begin transaction");
-        getEntityManager().getTransaction().begin();
-    }
-
-    /**
-     * トランザクションをコミットする。
-     */
-    public void commit(){
-        logger.info("transaction commit");
-        getEntityManager().getTransaction().commit();
-    }
-
-    /**
-     * トランザクションをロールバックする。
-     */
-    public void rollback(){
-        logger.info("transaction rollback");
-        getEntityManager().getTransaction().rollback();
-    }
-
-    /**
-     * トランザクションが開始されている場合、trueを返却する
-     *
-     * @return
-     */
-    public boolean isActive(){
-        return getEntityManager().getTransaction().isActive();
-    }
-
-    /**
      * 全てのレコードを取得する。
      *
      * @return

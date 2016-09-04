@@ -15,7 +15,7 @@ import org.json.JSONObject;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
+import javax.transaction.Transactional;
 
 @RequestScoped
 public class UserService{
@@ -62,38 +62,25 @@ public class UserService{
      *
      * @param userId
      * @param name
-     * @throws PersistenceException 永続化に失敗した場合
      */
-    public void create(long userId, String name) throws PersistenceException{
+    public void create(long userId, String name){
         logger.entry(userId, name);
 
         UserEntity user = userFacade.findById(userId);
 
-        try{
-            userFacade.beginTransaction();
-
-            if(user != null){
+        if(user != null){
                 /* 既存レコードのため、論理削除を外す */
-                user.setName(name);
-                user.setDeleted(UserEntity.DELETED.FALSE.getValue());
-            }else{
+            user.setName(name);
+            user.setDeleted(UserEntity.DELETED.FALSE.getValue());
+        }else{
                 /* レコード新規作成 */
-                UserEntity createUser = new UserEntity();
-                createUser.setId(userId);
-                createUser.setName(name);
-                createUser.setCreateDate(System.currentTimeMillis());
-                createUser.setDeleted(UserEntity.DELETED.FALSE.getValue());
-                createUser.setAdmin(UserEntity.ADMIN.FALSE.getValue());
-                userFacade.create(createUser);
-            }
-            userFacade.commit();
-        }catch (PersistenceException e){
-            logger.catching(Level.ERROR, e);
-
-            if(userFacade.isActive()){
-                userFacade.rollback();
-            }
-            throw e;
+            UserEntity createUser = new UserEntity();
+            createUser.setId(userId);
+            createUser.setName(name);
+            createUser.setCreateDate(System.currentTimeMillis());
+            createUser.setDeleted(UserEntity.DELETED.FALSE.getValue());
+            createUser.setAdmin(UserEntity.ADMIN.FALSE.getValue());
+            userFacade.create(createUser);
         }
         logger.traceExit();
     }
@@ -107,6 +94,7 @@ public class UserService{
      * @param favorite
      * @throws NoResourceException  ユーザーIDが存在しない場合
      */
+    @Transactional
     public void update(
             long userId,
             String name,
@@ -118,22 +106,13 @@ public class UserService{
         UserEntity updateUser = getById(userId);
 
         /* 更新 */
-        try{
-            if(name != null){
-                updateUser.setName(name);
-            }
-            if(favorite != null){
-                updateUser.setFavoriteId(favorite.getId());
-            }
-            updateUser.setUpdateDate(System.currentTimeMillis());
-        }catch (PersistenceException e){
-            logger.catching(Level.ERROR, e);
-
-            if(userFacade.isActive()){
-                userFacade.rollback();
-            }
-            throw e;
+        if(name != null){
+            updateUser.setName(name);
         }
+        if(favorite != null){
+            updateUser.setFavoriteId(favorite.getId());
+        }
+        updateUser.setUpdateDate(System.currentTimeMillis());
 
         logger.traceExit();
     }
@@ -144,22 +123,12 @@ public class UserService{
      * @param userId                ユーザーID
      * @throws NoResourceException  ユーザーIDが存在しない場合
      */
+    @Transactional
     public void delete(long userId)throws NoResourceException{
         logger.entry(userId);
 
         UserEntity user = getById(userId);
-        try{
-            userFacade.beginTransaction();
-            user.setDeleted(UserEntity.DELETED.TRUE.getValue());
-            userFacade.commit();
-        }catch (PersistenceException e){
-            logger.catching(Level.ERROR, e);
-
-            if(userFacade.isActive()){
-                userFacade.rollback();
-            }
-            throw e;
-        }
+        user.setDeleted(UserEntity.DELETED.TRUE.getValue());
 
         logger.traceExit();
     }

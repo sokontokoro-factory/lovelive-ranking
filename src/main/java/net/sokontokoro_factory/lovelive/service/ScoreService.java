@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
+import javax.transaction.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +68,7 @@ public class ScoreService {
      * @param point
      * @throws InvalidArgumentException
      */
+    @Transactional
     public void insertScore(MasterGame game, long userId, int point) throws InvalidArgumentException {
 
         /* ID確認 */
@@ -166,17 +167,7 @@ public class ScoreService {
         scoreEntity.setCreateDate(System.currentTimeMillis());
         scoreEntity.setFinalDate(System.currentTimeMillis());
 
-        try{
-            scoreFacade.beginTransaction();
-            scoreFacade.create(scoreEntity);
-            scoreFacade.commit();
-        }catch (PersistenceException e){
-            logger.catching(e);
-
-            if(scoreFacade.isActive()){
-                scoreFacade.rollback();
-            }
-        }
+        scoreFacade.create(scoreEntity);
         logger.traceExit();
     }
 
@@ -189,24 +180,13 @@ public class ScoreService {
     private void update(ScoreEntity scoreEntity, int point){
         logger.entry(scoreEntity, point);
 
-        try{
-            scoreFacade.beginTransaction();
-
-            if(point > scoreEntity.getPoint()){
-                scoreEntity.setPoint(point);
-                scoreEntity.setUpdateDate(System.currentTimeMillis());
-            }
-            scoreEntity.setCount(scoreEntity.getCount() + 1);
-            scoreEntity.setFinalDate(System.currentTimeMillis());
-
-            scoreFacade.commit();
-        }catch (PersistenceException e){
-            logger.catching(e);
-
-            if(scoreFacade.isActive()){
-                scoreFacade.rollback();
-            }
+        if(point > scoreEntity.getPoint()){
+            scoreEntity.setPoint(point);
+            scoreEntity.setUpdateDate(System.currentTimeMillis());
         }
+        scoreEntity.setCount(scoreEntity.getCount() + 1);
+        scoreEntity.setFinalDate(System.currentTimeMillis());
+
         logger.traceExit();
     }
 }
