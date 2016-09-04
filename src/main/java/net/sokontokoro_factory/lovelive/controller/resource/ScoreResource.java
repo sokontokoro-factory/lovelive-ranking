@@ -124,12 +124,6 @@ public class ScoreResource {
 				loginSession.getUserId(),
 				insertScoreForm.getPoint());
 
-		/* ロギング */
-		logService.addGameLog(
-				game,
-				loginSession.getUserId(),
-				insertScoreForm.getPoint());
-
     	/* レスポンス */
 		URI uri = uriInfo.getBaseUriBuilder()
 				.path(ScoreResource.class)
@@ -139,6 +133,28 @@ public class ScoreResource {
 
     	return Response.created(uri).build();
     }
+
+	@Path("{game_name}/playlog")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+    public Response postPlayLog(
+    		@PathParam("game_name")	String gameName,
+									InsertScoreForm insertScoreForm){
+		// ゲーム名の入力チェック
+		MasterGame game = MasterGame.codeOf(gameName);
+		if(game == null){
+			ErrorDto errorDto = new ErrorDto();
+			errorDto.setMessage("正しいゲーム名を指定して下さい");
+			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
+		}
+		/* ロギング */
+		logService.addGameLog(
+				game,
+				loginSession != null? loginSession.getUserId(): null,
+				insertScoreForm.getPoint());
+
+    	return Response.status(Response.Status.CREATED).build();
+	}
 
     /**
      * 指定順位以下のランキングスコアリストを取得する
