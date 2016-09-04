@@ -63,6 +63,7 @@ public class UserService{
      * @param userId
      * @param name
      */
+    @Transactional
     public void create(long userId, String name){
         logger.entry(userId, name);
 
