@@ -3,17 +3,15 @@ package net.sokontokoro_factory.lovelive.service;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.UserEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.UserFacade;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterFavorite;
+import net.sokontokoro_factory.lovelive.type.FavoriteType;
 import net.sokontokoro_factory.tweetly_oauth.TweetlyOAuth;
 import net.sokontokoro_factory.tweetly_oauth.TweetlyOAuthException;
 import net.sokontokoro_factory.tweetly_oauth.dto.AccessToken;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -49,7 +47,7 @@ public class UserService{
         UserEntity user = userFacade.findById(userId);
         if(user == null){
             throw new NoResourceException("指定されたIDは未登録です。");
-        }else if(user.getDeleted().equals(UserEntity.DELETED.TRUE.getValue())){
+        }else if(user.isDeleted()){
             throw new NoResourceException("削除済みのユーザーです。");
         }else{
             return logger.traceExit(user);
@@ -70,17 +68,17 @@ public class UserService{
         UserEntity user = userFacade.findById(userId);
 
         if(user != null){
-                /* 既存レコードのため、論理削除を外す */
+            /* 既存レコードのため、論理削除を外す */
             user.setName(name);
-            user.setDeleted(UserEntity.DELETED.FALSE.getValue());
+            user.setDeleted(false);
         }else{
-                /* レコード新規作成 */
+            /* レコード新規作成 */
             UserEntity createUser = new UserEntity();
             createUser.setId(userId);
             createUser.setName(name);
             createUser.setCreateDate(System.currentTimeMillis());
-            createUser.setDeleted(UserEntity.DELETED.FALSE.getValue());
-            createUser.setAdmin(UserEntity.ADMIN.FALSE.getValue());
+            createUser.setDeleted(false);
+            createUser.setAdmin(false);
             userFacade.create(createUser);
         }
         logger.traceExit();
@@ -99,7 +97,7 @@ public class UserService{
     public void update(
             long userId,
             String name,
-            MasterFavorite favorite) throws NoResourceException{
+            FavoriteType favorite) throws NoResourceException{
 
         logger.entry(userId, name, favorite);
 
@@ -111,7 +109,7 @@ public class UserService{
             updateUser.setName(name);
         }
         if(favorite != null){
-            updateUser.setFavoriteId(favorite.getId());
+            updateUser.setFavorite(favorite);
         }
         updateUser.setUpdateDate(System.currentTimeMillis());
 
@@ -129,7 +127,7 @@ public class UserService{
         logger.entry(userId);
 
         UserEntity user = getById(userId);
-        user.setDeleted(UserEntity.DELETED.TRUE.getValue());
+        user.setDeleted(true);
 
         logger.traceExit();
     }

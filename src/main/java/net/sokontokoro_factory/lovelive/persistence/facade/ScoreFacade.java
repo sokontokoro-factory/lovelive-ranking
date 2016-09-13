@@ -1,6 +1,7 @@
 package net.sokontokoro_factory.lovelive.persistence.facade;
 
 import net.sokontokoro_factory.lovelive.persistence.entity.ScoreEntity;
+import net.sokontokoro_factory.lovelive.type.GameType;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -26,17 +27,17 @@ public class ScoreFacade extends AbstractFacade<ScoreEntity>{
     /**
      * scoreEntityを取得する
      *
-     * @param gameId
+     * @param game
      * @param userId
      * @return
      */
-    public ScoreEntity findById(int gameId, long userId){
+    public ScoreEntity findOne(GameType game, long userId){
 
         Query jpql = getEntityManager().createQuery(
-                "SELECT s FROM ScoreEntity s WHERE s.gameId = :gameId AND s.userId = :userId",
+                "SELECT s FROM ScoreEntity s WHERE s.game = :gameId AND s.userId = :userId",
                 ScoreEntity.class)
                 .setParameter("userId", userId)
-                .setParameter("gameId", gameId);
+                .setParameter("gameId", game);
 
         try{
             return (ScoreEntity) jpql.getSingleResult();
@@ -45,11 +46,11 @@ public class ScoreFacade extends AbstractFacade<ScoreEntity>{
         }
     }
 
-    public int getRanking(Integer gameId, int borderPoint){
+    public int getRanking(GameType game, int borderPoint){
         Query query = getEntityManager().createQuery(
-                "SELECT count(s) FROM ScoreEntity s WHERE s.gameId = :gameId AND s.point > :borderPoint")
+                "SELECT count(s) FROM ScoreEntity s WHERE s.game = :game AND s.point > :borderPoint")
                 .setParameter("borderPoint", borderPoint)
-                .setParameter("gameId", gameId);
+                .setParameter("game", game);
 
 
         try{
@@ -64,16 +65,16 @@ public class ScoreFacade extends AbstractFacade<ScoreEntity>{
     /**
      * 指定ゲームの降順のScoreEntityのarrayを返す。(指定ゲームの各ユーザーの最高スコアを取得する)
      *
-     * @param gameId
+     * @param game
      * @param limit
      * @return
      */
 
-    public List<ScoreEntity> getByGameId(Integer gameId, int limit) {
+    public List<ScoreEntity> findList(GameType game, int limit) {
         Query jpql = getEntityManager().createQuery(
-                "SELECT s.point FROM ScoreEntity s WHERE s.gameId = :gameId GROUP BY s.point ORDER BY s.point DESC",
+                "SELECT s.point FROM ScoreEntity s WHERE s.game = :game GROUP BY s.point ORDER BY s.point DESC",
                 Integer.class)
-                .setParameter("gameId", gameId)
+                .setParameter("game", game)
                 .setMaxResults(limit);
 
 
@@ -82,10 +83,10 @@ public class ScoreFacade extends AbstractFacade<ScoreEntity>{
         int borderPoint = upperPointList.get(upperPointList.size() - 1);
 
         Query query = getEntityManager().createQuery(
-                "SELECT S FROM ScoreEntity s WHERE s.gameId = :gameId AND s.point >= :point ORDER BY s.point DESC",
+                "SELECT S FROM ScoreEntity s WHERE s.game = :game AND s.point >= :point ORDER BY s.point DESC",
                 ScoreEntity.class);
 
-        query.setParameter("gameId", gameId).setParameter("point", borderPoint);
+        query.setParameter("game", game).setParameter("point", borderPoint);
 
         return query.getResultList();
     }

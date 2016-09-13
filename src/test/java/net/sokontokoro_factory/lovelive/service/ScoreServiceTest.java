@@ -2,12 +2,10 @@ package net.sokontokoro_factory.lovelive.service;
 
 import net.sokontokoro_factory.lovelive.PrivateField;
 import net.sokontokoro_factory.lovelive.TestDatabase;
-import net.sokontokoro_factory.lovelive.TestUtil;
-import net.sokontokoro_factory.lovelive.WeldJUnit4Runner;
 import net.sokontokoro_factory.lovelive.exception.InvalidArgumentException;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.ScoreEntity;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterGame;
+import net.sokontokoro_factory.lovelive.type.GameType;
 import net.sokontokoro_factory.lovelive.persistence.facade.ScoreFacade;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.*;
@@ -15,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -32,7 +29,7 @@ public class ScoreServiceTest {
     @Test
     public void test_getScore_スコア情報を取得できる()throws Exception{
         long userId = 111111;
-        ScoreEntity actualScore = targetClass.getScore(MasterGame.HONOCAR, userId);
+        ScoreEntity actualScore = targetClass.getScore(GameType.HONOCAR, userId);
 
         assertThat(actualScore.getUserId(),is(userId));
     }
@@ -41,7 +38,7 @@ public class ScoreServiceTest {
     public void test_getScore_ユーザーIDが存在しない場合例外が発生する()throws Exception{
         long notExistUserId = 25252;
         try{
-            targetClass.getScore(MasterGame.HONOCAR, notExistUserId);
+            targetClass.getScore(GameType.HONOCAR, notExistUserId);
             fail();
         }catch (InvalidArgumentException ok){
 
@@ -52,7 +49,7 @@ public class ScoreServiceTest {
     public void test_getScore_スコアが未登録の場合例外が発生する()throws Exception{
         long notExistUserId = 999999;
         try{
-            targetClass.getScore(MasterGame.SHAKARIN, notExistUserId);
+            targetClass.getScore(GameType.SHAKARIN, notExistUserId);
             fail();
         }catch (NoResourceException ok){
 
@@ -63,7 +60,7 @@ public class ScoreServiceTest {
     @Test
     public void test_getTop_ランキング上位のスコアリストを降順で取得できる()throws Exception{
 
-        List<ScoreEntity> actualList = targetClass.getTops(MasterGame.HONOCAR, 1);
+        List<ScoreEntity> actualList = targetClass.getTops(GameType.HONOCAR, 1);
 
         // 降順のリストである
         int preventPoint = Integer.MAX_VALUE;
@@ -85,13 +82,13 @@ public class ScoreServiceTest {
     @Test
     public void test_getRanking_順位を取得できる()throws Exception{
 
-        List<ScoreEntity> scores = targetClass.getTops(MasterGame.HONOCAR, 1);
+        List<ScoreEntity> scores = targetClass.getTops(GameType.HONOCAR, 1);
 
         // １位
-        assertTrue(targetClass.getRankingNumber(MasterGame.HONOCAR, scores.get(0).getPoint()) == 1);
+        assertTrue(targetClass.getRankingNumber(GameType.HONOCAR, scores.get(0).getPoint()) == 1);
 
         // 最下位
-        assertTrue(targetClass.getRankingNumber(MasterGame.HONOCAR, scores.get(scores.size() -1 ).getPoint()) == scores.size());
+        assertTrue(targetClass.getRankingNumber(GameType.HONOCAR, scores.get(scores.size() -1 ).getPoint()) == scores.size());
     }
 
 

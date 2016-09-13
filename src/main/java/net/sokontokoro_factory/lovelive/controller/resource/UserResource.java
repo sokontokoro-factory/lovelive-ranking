@@ -6,14 +6,13 @@ import net.sokontokoro_factory.lovelive.controller.form.UpdateUserForm;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.filter.AuthFilter;
 import net.sokontokoro_factory.lovelive.persistence.entity.UserEntity;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterFavorite;
+import net.sokontokoro_factory.lovelive.type.FavoriteType;
 import net.sokontokoro_factory.lovelive.service.LoginSession;
 import net.sokontokoro_factory.lovelive.service.UserService;
 import net.sokontokoro_factory.tweetly_oauth.TweetlyOAuthException;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -75,10 +74,10 @@ public class UserResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(UpdateUserForm updateUserForm) throws NoResourceException{
 
-        MasterFavorite favorite = null;
+        FavoriteType favorite = null;
         // キャラ名の入力チェック
         if(updateUserForm.getFavorite() != null){
-            favorite = MasterFavorite.codeOf(updateUserForm.getFavorite());
+            favorite = FavoriteType.codeOf(updateUserForm.getFavorite());
             if(favorite == null){
                 ErrorDto errorDto = new ErrorDto("正しいキャラクター名を指定して下さい");
                 return Response.status(Response.Status.BAD_REQUEST).entity(errorDto).build();

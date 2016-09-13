@@ -7,7 +7,7 @@ import net.sokontokoro_factory.lovelive.exception.InvalidArgumentException;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.filter.AuthFilter;
 import net.sokontokoro_factory.lovelive.persistence.entity.ScoreEntity;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterGame;
+import net.sokontokoro_factory.lovelive.type.GameType;
 import net.sokontokoro_factory.lovelive.service.LogService;
 import net.sokontokoro_factory.lovelive.service.LoginSession;
 import net.sokontokoro_factory.lovelive.service.ScoreService;
@@ -61,21 +61,23 @@ public class ScoreResource {
 	public Response getScore(@PathParam(value = "game_name") String gameName)
 			throws NoResourceException, InvalidArgumentException {
 
+		String upperCaseGameName = gameName.toUpperCase();
+
 		// ゲーム名の入力チェック
-		MasterGame game = MasterGame.codeOf(gameName);
-		if(game == null){
+		if(!GameType.contains(upperCaseGameName)){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
 		}
 
     	/* エンティティ取得 */
-		ScoreEntity scoreEntity = scoreService.getScore (game, loginSession.getUserId());
+		GameType game = GameType.valueOf(upperCaseGameName);
+    	ScoreEntity scoreEntity = scoreService.getScore (game, loginSession.getUserId());
 		long ranking = scoreService.getRankingNumber(game, scoreEntity.getPoint());
 
     	/* レスポンスデータ作成 */
 		ScoreDto score = new ScoreDto();
-		score.setGameName(game.getCode());
+		score.setGame(game);
 		score.setUserId(scoreEntity.getUserId());
 		score.setUserName(scoreEntity.getUserEntity().getName());
 		score.setPoint(scoreEntity.getPoint());
@@ -111,14 +113,15 @@ public class ScoreResource {
 		}
 
 		// ゲーム名の入力チェック
-		MasterGame game = MasterGame.codeOf(gameName);
-		if(game == null){
+		String upperCaseGameName = gameName.toUpperCase();
+		if(!GameType.contains(upperCaseGameName)){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
 		}
 
     	/* DB書き込み */
+		GameType game = GameType.valueOf(upperCaseGameName);
 		scoreService.insertScore(
 				game,
 				loginSession.getUserId(),
@@ -127,7 +130,7 @@ public class ScoreResource {
     	/* レスポンス */
 		URI uri = uriInfo.getBaseUriBuilder()
 				.path(ScoreResource.class)
-				.path(game.getCode())
+				.path(game.name().toLowerCase())
 				.path("me")
 				.build();
 
@@ -141,13 +144,15 @@ public class ScoreResource {
     		@PathParam("game_name")	String gameName,
 									InsertScoreForm insertScoreForm){
 		// ゲーム名の入力チェック
-		MasterGame game = MasterGame.codeOf(gameName);
-		if(game == null){
+		String upperCaseGameName = gameName.toUpperCase();
+		if(!GameType.contains(upperCaseGameName)){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
 		}
+
 		/* ロギング */
+		GameType game = GameType.valueOf(upperCaseGameName);
 		logService.addGameLog(
 				game,
 				loginSession != null? loginSession.getUserId(): null,
@@ -174,8 +179,8 @@ public class ScoreResource {
 					Integer offset){
 
 		// ゲーム名の入力チェック
-		MasterGame game = MasterGame.codeOf(gameName);
-		if(game == null){
+		String upperCaseGameName = gameName.toUpperCase();
+		if(!GameType.contains(upperCaseGameName)){
 			ErrorDto errorDto = new ErrorDto();
 			errorDto.setMessage("正しいゲーム名を指定して下さい");
 			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
@@ -188,6 +193,7 @@ public class ScoreResource {
 		}
 
     	/* エンティティ取得 */
+		GameType game = GameType.valueOf(upperCaseGameName);
     	List<ScoreEntity> scoreEntities = scoreService.getTops(game, offset);
 
 		List<ScoreDto> scores = new ArrayList();

@@ -2,16 +2,12 @@ package net.sokontokoro_factory.lovelive.service;
 
 import net.sokontokoro_factory.lovelive.persistence.entity.GameLogEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.GameLogFacade;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterGame;
+import net.sokontokoro_factory.lovelive.type.GameType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.persistence.sessions.Login;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 @RequestScoped
@@ -33,13 +29,13 @@ public class LogService {
      */
     @Transactional
     public void addGameLog(
-            MasterGame game,
+            GameType game,
             Long userId,
             int point){
         logger.entry("add()", game, userId);
 
         GameLogEntity log = new GameLogEntity();
-        log.setGameId(game.getId());
+        log.setGame(game);
         log.setUserId(userId);
         log.setPoint(point);
         log.setPlayDate(System.currentTimeMillis());

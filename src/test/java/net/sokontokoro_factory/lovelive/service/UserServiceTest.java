@@ -4,7 +4,7 @@ import net.sokontokoro_factory.lovelive.TestDatabase;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.UserEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.UserFacade;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterFavorite;
+import net.sokontokoro_factory.lovelive.type.FavoriteType;
 import net.sokontokoro_factory.tweetly_oauth.dto.AccessToken;
 import org.apache.deltaspike.testcontrol.api.junit.CdiTestRunner;
 import org.junit.*;
@@ -93,7 +93,7 @@ public class UserServiceTest {
 
         // 削除フラグがfalseになっている
         UserEntity undeletedUser = userFacade.findById(deletedUserId);
-        assertThat(undeletedUser.getDeleted(), is(UserEntity.DELETED.FALSE.getValue()));
+        assertTrue(!undeletedUser.isDeleted());
     }
 
 
@@ -101,7 +101,7 @@ public class UserServiceTest {
     public void test_update_ユーザーが存在しない場合例外が発生する(){
         long notExistUserId = 25252;
         String userName = "any string";
-        MasterFavorite favorite = MasterFavorite.KOTORI;
+        FavoriteType favorite = FavoriteType.KOTORI;
 
         // 実行
         try{
@@ -119,14 +119,14 @@ public class UserServiceTest {
 
         // 削除されていないユーザー
         UserEntity existUser = userFacade.findById(existUserId);
-        assertThat(existUser.getDeleted(), is(UserEntity.DELETED.FALSE.getValue()));
+        assertTrue(!existUser.isDeleted());
 
         // 実行
         userService.delete(existUserId);
 
         // 削除フラグがtrueになっている
         UserEntity deletedUser = userFacade.findById(existUserId);
-        assertThat(deletedUser.getDeleted(), is(UserEntity.DELETED.TRUE.getValue()));
+        assertTrue(deletedUser.isDeleted());
     }
 
 

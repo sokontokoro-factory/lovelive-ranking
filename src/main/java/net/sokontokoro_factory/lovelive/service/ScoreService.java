@@ -4,7 +4,7 @@ import net.sokontokoro_factory.lovelive.exception.InvalidArgumentException;
 import net.sokontokoro_factory.lovelive.exception.NoResourceException;
 import net.sokontokoro_factory.lovelive.persistence.entity.ScoreEntity;
 import net.sokontokoro_factory.lovelive.persistence.facade.GameLogFacade;
-import net.sokontokoro_factory.lovelive.persistence.master.MasterGame;
+import net.sokontokoro_factory.lovelive.type.GameType;
 import net.sokontokoro_factory.lovelive.persistence.facade.ScoreFacade;
 import net.sokontokoro_factory.lovelive.persistence.facade.UserFacade;
 import net.sokontokoro_factory.yoshinani.file.config.Config;
@@ -46,13 +46,13 @@ public class ScoreService {
      * @throws NoResourceException          スコアが存在しないとき
      * @throws InvalidArgumentException     ユーザーIDが存在しないとき
      */
-    public ScoreEntity getScore(MasterGame game, long userId) throws NoResourceException, InvalidArgumentException {
+    public ScoreEntity getScore(GameType game, long userId) throws NoResourceException, InvalidArgumentException {
         /* ID確認 */
         if(!userFacade.isExist(userId)){
             throw new InvalidArgumentException("存在しないユーザーIDです。");
         }
 
-        ScoreEntity score = scoreFacade.findById(game.getId(), userId);
+        ScoreEntity score = scoreFacade.findOne(game, userId);
         if(score == null){
             throw new NoResourceException("スコア未登録です。");
         }else{
@@ -69,36 +69,36 @@ public class ScoreService {
      * @throws InvalidArgumentException
      */
     @Transactional
-    public void insertScore(MasterGame game, long userId, int point) throws InvalidArgumentException {
+    public void insertScore(GameType game, long userId, int point) throws InvalidArgumentException {
 
         /* ID確認 */
         if(!userFacade.isExist(userId)){
             throw new InvalidArgumentException("存在しないユーザーIDです。");
         }
 
-        ScoreEntity registeredScore = scoreFacade.findById(game.getId(), userId);
+        ScoreEntity registeredScore = scoreFacade.findOne(game, userId);
 
         if (registeredScore != null){
             update(registeredScore, point);
         } else {
-            insert(game.getId(), userId, point);
+            insert(game, userId, point);
         }
     }
 
     /**
      * 順位を取得する
      *
-     * @param game
+     * @param targetGame
      * @param targetPoint
      * @return
      */
-    public Long getRankingNumber(MasterGame game, int targetPoint){
-        logger.entry("getRanking()", game, targetPoint);
+    public Long getRankingNumber(GameType targetGame, int targetPoint){
+        logger.entry("getRanking()", targetGame, targetPoint);
 
         List<ScoreEntity> allScore = scoreFacade.findAll();
         long ranking = allScore
                 .stream()
-                .filter(score -> score.getGameId() == game.getId())
+                .filter(score -> score.getGame() == targetGame)
                 .filter(score -> score.getPoint() > targetPoint)
                 .count() + 1;
 
@@ -107,15 +107,15 @@ public class ScoreService {
 
 
 
-    public List<ScoreEntity> getTops(MasterGame game, int offsetRankingNumber){
-        logger.entry(game, offsetRankingNumber);
-        int offsetBorderPoint = getBorderPoint(game, offsetRankingNumber);
-        int limitBorderPoint = getBorderPoint(game, offsetRankingNumber + PRODUCE_NUMBER_OF_RANKING);
+    public List<ScoreEntity> getTops(GameType targetGame, int offsetRankingNumber){
+        logger.entry(targetGame, offsetRankingNumber);
+        int offsetBorderPoint = getBorderPoint(targetGame, offsetRankingNumber);
+        int limitBorderPoint = getBorderPoint(targetGame, offsetRankingNumber + PRODUCE_NUMBER_OF_RANKING);
 
         List<ScoreEntity> allScore = scoreFacade.findAll();
         List<ScoreEntity> topScores = allScore
                 .stream()
-                .filter(score -> score.getGameId() == game.getId())
+                .filter(score -> score.getGame() == targetGame)
                 .filter(score -> score.getPoint() <= offsetBorderPoint)
                 .filter(score -> score.getPoint() > limitBorderPoint)
                 .sorted(comparing(ScoreEntity::getPoint).reversed())
@@ -124,17 +124,29 @@ public class ScoreService {
         return logger.traceExit(topScores);
     }
 
-    public int getBorderPoint(MasterGame game, int targetRankingNumber){
-        logger.entry(game);
+    /**
+     * 指定のランキング順位に入るための最低ポイントを取得する
+     *
+     * @param targetGame
+     * @param targetRankingNumber
+     * @return
+     */
+    public int getBorderPoint(GameType targetGame, int targetRankingNumber){
+        logger.entry(targetGame);
         List<ScoreEntity> allScore = scoreFacade.findAll();
 
         List<Integer> descPoints = allScore
                 .stream()
-                .filter(score -> score.getGameId() == game.getId())
+                .filter(score -> score.getGame() == targetGame)
                 .map(score -> score.getPoint())
                 .distinct()
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
+
+        // スコア未登録の場合
+        if(descPoints.size() == 0){
+            return 0;
+        }
 
         int borderPoint;
         if(descPoints.size() < targetRankingNumber){
@@ -142,7 +154,7 @@ public class ScoreService {
         }else {
             borderPoint = descPoints.get(targetRankingNumber - 1);
         }
-        logger.info("game: " + game + ", borderpoint: " + borderPoint);
+        logger.info("game: " + targetGame + ", borderpoint: " + borderPoint);
         return logger.traceExit(borderPoint);
     }
 
@@ -152,15 +164,15 @@ public class ScoreService {
      * スコアを新規登録する。
      * gameName、userIdの組み合わせが既存で無いことを確認すること
      *
-     * @param gameId
+     * @param game
      * @param userId
      * @param point
      */
-    private void insert(int gameId, long userId, int point){
-        logger.entry(gameId, userId, point);
+    private void insert(GameType game, long userId, int point){
+        logger.entry(game, userId, point);
 
         ScoreEntity scoreEntity = new ScoreEntity();
-        scoreEntity.setGameId(gameId);
+        scoreEntity.setGame(game);
         scoreEntity.setUserId(userId);
         scoreEntity.setPoint(point);
         scoreEntity.setCount(1);

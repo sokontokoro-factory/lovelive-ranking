@@ -1,6 +1,7 @@
 package net.sokontokoro_factory.lovelive.persistence.entity;
 
 import lombok.Data;
+import net.sokontokoro_factory.lovelive.type.GameType;
 
 import javax.persistence.*;
 
@@ -13,8 +14,9 @@ public class ScoreEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "GAME_ID", nullable = false)
-    private Integer gameId;
+    @Column(name = "GAME", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private GameType game;
 
     @Column(name = "USER_ID", nullable = false)
     private Long userId;

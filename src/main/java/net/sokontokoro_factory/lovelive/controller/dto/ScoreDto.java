@@ -3,6 +3,7 @@ package net.sokontokoro_factory.lovelive.controller.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+import net.sokontokoro_factory.lovelive.type.GameType;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -13,10 +14,10 @@ import java.sql.Timestamp;
 @XmlRootElement
 public class ScoreDto {
 	
-	@XmlElement(name = "game_name")
+	@XmlElement(name = "game")
 	@Getter
 	@Setter
-	private String gameName;
+	private GameType game;
 	
 	@XmlElement(name = "user_id")
 	@Getter
