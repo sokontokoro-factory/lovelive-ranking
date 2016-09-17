@@ -12,6 +12,8 @@ import net.sokontokoro_factory.lovelive.service.LogService;
 import net.sokontokoro_factory.lovelive.service.LoginSession;
 import net.sokontokoro_factory.lovelive.service.ScoreService;
 import net.sokontokoro_factory.lovelive.service.UserService;
+import net.sokontokoro_factory.yoshinani.file.config.Config;
+import net.sokontokoro_factory.yoshinani.file.config.ConfigLoader;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -30,6 +32,8 @@ import java.util.Map;
 @Path("scores")
 @RequestScoped
 public class ScoreResource {
+	private static final Config config = ConfigLoader.getProperties("config");
+	private static final int PRODUCE_NUMBER_OF_RANKING = config.getInt("produce.number.ranking");
 
 	@Context
     UriInfo uriInfo;
@@ -181,20 +185,23 @@ public class ScoreResource {
 		// ゲーム名の入力チェック
 		String upperCaseGameName = gameName.toUpperCase();
 		if(!GameType.contains(upperCaseGameName)){
-			ErrorDto errorDto = new ErrorDto();
-			errorDto.setMessage("正しいゲーム名を指定して下さい");
-			return Response.status(Response.Status.NOT_FOUND).entity(errorDto).build();
+			return Response
+					.status(Response.Status.NOT_FOUND)
+					.entity(new ErrorDto("正しいゲーム名を指定して下さい"))
+					.build();
 		}
 
 		// offset値の入力チェック
 		if(offset <= 0){
-			ErrorDto error = new ErrorDto("ランキングのoffset値は1以上を指定して下さい。");
-			return Response.status(Response.Status.BAD_REQUEST).entity(error).build();
+			return Response
+					.status(Response.Status.BAD_REQUEST)
+					.entity(new ErrorDto("ランキングのoffset値は1以上を指定して下さい。"))
+					.build();
 		}
 
     	/* エンティティ取得 */
 		GameType game = GameType.valueOf(upperCaseGameName);
-    	List<ScoreEntity> scoreEntities = scoreService.getTops(game, offset);
+    	List<ScoreEntity> scoreEntities = scoreService.getList(game, offset, PRODUCE_NUMBER_OF_RANKING);
 
 		List<ScoreDto> scores = new ArrayList();
 		long ranking = 0;

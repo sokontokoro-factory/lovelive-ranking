@@ -25,9 +25,6 @@ import static java.util.Comparator.comparing;
 public class ScoreService {
     private static final Logger logger = LogManager.getLogger(ScoreService.class);
 
-    private static final Config cofig = ConfigLoader.getProperties("config");
-    private static final int PRODUCE_NUMBER_OF_RANKING = cofig.getInt("produce.number.ranking");
-
     @Inject
     ScoreFacade scoreFacade;
 
@@ -88,8 +85,8 @@ public class ScoreService {
     /**
      * 順位を取得する
      *
-     * @param targetGame
-     * @param targetPoint
+     * @param targetGame    対象のゲーム
+     * @param targetPoint   順位を取得する点数
      * @return
      */
     public Long getRankingNumber(GameType targetGame, int targetPoint){
@@ -98,6 +95,7 @@ public class ScoreService {
         List<ScoreEntity> allScore = scoreFacade.findAll();
         long ranking = allScore
                 .stream()
+                .filter(score -> !score.getUserEntity().isDeleted())
                 .filter(score -> score.getGame() == targetGame)
                 .filter(score -> score.getPoint() > targetPoint)
                 .count() + 1;
@@ -105,16 +103,23 @@ public class ScoreService {
         return logger.traceExit(ranking);
     }
 
-
-
-    public List<ScoreEntity> getTops(GameType targetGame, int offsetRankingNumber){
+    /**
+     * offsetRankingNumber以下の順位のScoreEntityのリストを取得する
+     *
+     * @param targetGame            対象のゲーム
+     * @param offsetRankingNumber   検索するリストのスコアの上限値
+     * @param range                 検索するリストの数
+     * @return
+     */
+    public List<ScoreEntity> getList(GameType targetGame, int offsetRankingNumber, int range){
         logger.entry(targetGame, offsetRankingNumber);
         int offsetBorderPoint = getBorderPoint(targetGame, offsetRankingNumber);
-        int limitBorderPoint = getBorderPoint(targetGame, offsetRankingNumber + PRODUCE_NUMBER_OF_RANKING);
+        int limitBorderPoint = getBorderPoint(targetGame, offsetRankingNumber + range);
 
         List<ScoreEntity> allScore = scoreFacade.findAll();
         List<ScoreEntity> topScores = allScore
                 .stream()
+                .filter(score -> !score.getUserEntity().isDeleted())
                 .filter(score -> score.getGame() == targetGame)
                 .filter(score -> score.getPoint() <= offsetBorderPoint)
                 .filter(score -> score.getPoint() > limitBorderPoint)

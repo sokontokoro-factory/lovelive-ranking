@@ -22,4 +22,19 @@ public class UserFacade extends AbstractFacade<UserEntity>{
         super(UserEntity.class);
     }
 
+    /**
+     * IDに対応したEntityが存在する場合、trueを返す
+     * レコードにない、論理削除済みの場合はfalse
+     */
+    @Override
+    public boolean isExist(Object id){
+        UserEntity result = getEntityManager().find(UserEntity.class, id);
+
+        if(result == null || result.isDeleted()){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }

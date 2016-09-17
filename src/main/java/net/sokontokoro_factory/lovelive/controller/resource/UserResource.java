@@ -107,6 +107,7 @@ public class UserResource {
 
     	/* execute */
         userService.delete(loginSession.getUserId());
+        loginSession.invalidate();
 
     	/* レスポンス */
         return Response.noContent().build();

@@ -14,7 +14,9 @@ import org.junit.runner.RunWith;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
@@ -59,8 +61,10 @@ public class ScoreServiceTest {
 
     @Test
     public void test_getTop_ランキング上位のスコアリストを降順で取得できる()throws Exception{
+        int listRenge = 10;
+        List<ScoreEntity> actualList = targetClass.getList(GameType.HONOCAR, 1, listRenge);
 
-        List<ScoreEntity> actualList = targetClass.getTops(GameType.HONOCAR, 1);
+        long count = 0;
 
         // 降順のリストである
         int preventPoint = Integer.MAX_VALUE;
@@ -69,26 +73,37 @@ public class ScoreServiceTest {
             preventPoint = score.getPoint();
         }
 
-        for(ScoreEntity s: actualList){
-            System.out.println("!!!!!!!!" + s.toString());
+        // 重複考慮したスコアリストの数を取得する
+        preventPoint = Integer.MAX_VALUE;
+        for (ScoreEntity score: actualList) {
+            if(preventPoint != score.getPoint()){
+                count ++;
+            }
+            preventPoint = score.getPoint();
         }
 
         // 重複考慮された、順位数分のリストを返却している
         long countOfRanking = actualList.stream().map(list -> list.getPoint()).distinct().count();
-        long expectCount = Long.valueOf(PrivateField.get(ScoreService.class, "PRODUCE_NUMBER_OF_RANKING").toString());
-        assertThat(countOfRanking, is(expectCount));
+        assertThat(countOfRanking, is(count));
     }
 
     @Test
     public void test_getRanking_順位を取得できる()throws Exception{
 
-        List<ScoreEntity> scores = targetClass.getTops(GameType.HONOCAR, 1);
+        List<ScoreEntity> all = scoreFacade.findAll()
+                .stream()
+                .filter(score -> !score.getUserEntity().isDeleted())
+                .filter(score -> score.getGame() == GameType.HONOCAR)
+                .sorted(comparing(ScoreEntity::getPoint).reversed())
+                .collect(Collectors.toList());
 
         // １位
-        assertTrue(targetClass.getRankingNumber(GameType.HONOCAR, scores.get(0).getPoint()) == 1);
+        long topRanking = targetClass.getRankingNumber(GameType.HONOCAR, all.get(0).getPoint());
+        assertThat(topRanking, is(1l));
 
         // 最下位
-        assertTrue(targetClass.getRankingNumber(GameType.HONOCAR, scores.get(scores.size() -1 ).getPoint()) == scores.size());
+        long lowest = targetClass.getRankingNumber(GameType.HONOCAR, all.get(all.size() -1).getPoint());
+        assertThat(lowest, is(Long.valueOf(all.size())));
     }
 
 
