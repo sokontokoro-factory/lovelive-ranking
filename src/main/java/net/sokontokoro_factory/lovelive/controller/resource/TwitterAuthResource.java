@@ -109,6 +109,11 @@ public class TwitterAuthResource {
     		return Response.status(Status.UNAUTHORIZED).entity("Unauthorized.Please try to login again, sorry.").build();
     	}
 
+        URI redirect = UriBuilder
+                .fromUri(GAME_CLIENT_ORIGIN)
+                .path(loginSession.getRedirectPathAfterLogging())
+                .build();
+
         try {
             // ユーザーが認証許可したか
             if(denied.equals("admit")){
@@ -139,11 +144,6 @@ public class TwitterAuthResource {
             error.setMessage("faild to access twitter auth providing server");
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(error).build();
         }
-
-        URI redirect = UriBuilder
-                .fromUri(GAME_CLIENT_ORIGIN)
-                .path(loginSession.getRedirectPathAfterLogging())
-                .build();
 
         return Response.seeOther(redirect).build();
     }
