@@ -6,6 +6,7 @@ public enum GameType {
     HONOCAR,
     SHAKARIN,
     MARUTEN,
+    YAMIDORI
     ;
 
     public static boolean contains(String checkValue){
