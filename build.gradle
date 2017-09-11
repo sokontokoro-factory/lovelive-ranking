@@ -1,7 +1,6 @@
 apply plugin: 'war'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
-apply plugin: 'org.akhikhl.gretty'
 
 group = 'net.sokontokoro_factory'
 version = '2.0'
@@ -13,20 +12,12 @@ targetCompatibility = '1.8'
 buildscript {
     repositories { jcenter() }
     dependencies {
-        classpath 'org.akhikhl.gretty:gretty:+'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
     }
 }
 
 war {
     archiveName = "lovelive-${version}.${getDate()}.war"
-}
-
-gretty {
-    servletContainer = 'tomcat8'
-    port = 25252
-    contextPath = 'lovelive'
-    logDir = 'logs/'
 }
 
 repositories {
