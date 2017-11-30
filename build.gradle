@@ -3,7 +3,7 @@ apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 
 group = 'net.sokontokoro_factory'
-version = '2.0'
+version = '2.3'
 
 
 sourceCompatibility = '1.8'
